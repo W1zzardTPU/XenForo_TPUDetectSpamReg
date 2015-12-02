@@ -29,10 +29,13 @@ class TPUDetectSpamReg_AS
 	
 	static function getASNameAndNumber($ip, &$asNumber, &$asName)
 	{
-		if (self::isIPv6($ip))
-			$dns=dns_get_record(self::reverseIPv6($ip).'.origin6.asn.cymru.com', DNS_TXT);
-		else
-			$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
+		try 
+		{
+			if (self::isIPv6($ip))
+				$dns=dns_get_record(self::reverseIPv6($ip).'.origin6.asn.cymru.com', DNS_TXT);
+			else
+				$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
+		} catch(Exception $e) {}
 			
 		if ((is_array($dns)) && (isset($dns[0])))
 		{
