@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.3" version_id="11" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="option_template_tpudetectspamreghelp"><![CDATA[<xen:controlunit label="<b>{$preparedOption.title}:</b>">
+
+	<ul>
+		<li><p>{xen:raw $preparedOption.explain}</p></li>
+	</ul>
+	
+	{xen:raw $editLink}
+
+</xen:controlunit>]]></template>
+    <template title="option_template_tpudetectspamregmodposts"><![CDATA[<xen:controlunit label="{$preparedOption.title}">
+
+	<ul>
+		<li><xen:spinbox
+				name="{$fieldPrefix}[{$preparedOption.option_id}][score]"
+				value="{$preparedOption.option_value.score}"
+				step="1"
+				min="0"/></li>
+		<li><p class="explain">{xen:raw $preparedOption.explain}</p></li>
+		<li><div><label for="tpudsr_score">Automatically remove auto-moderation when number of approved posts exceeds:</label></div>
+			<xen:spinbox
+				name="{$fieldPrefix}[{$preparedOption.option_id}][messagecount]"
+				value="{$preparedOption.option_value.messagecount}"
+				step="1"
+				min="0"
+				id="tpudsr_score" />
+		<p class="explain">0 to disable.</p></li>
+		<li><div><label for="tpudsr_score">Automatically delete auto-moderated users, who never made any posts, who haven't logged on for x days:</label></div>
+			<xen:spinbox
+				name="{$fieldPrefix}[{$preparedOption.option_id}][purgedays]"
+				value="{$preparedOption.option_value.purgedays}"
+				step="1"
+				min="0"
+				id="tpudsr_purgedays" />
+		<p class="explain">This will permanently remove the user, not just the permission. 0 to disable.</p></li>		
+	</ul>
+	
+	<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
+	{xen:raw $editLink}
+
+</xen:controlunit>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="user_edit" modification_key="TPUDetectSpamReg1" description="Add Tab" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<li id="tabChangeLog".*?<\/li>/]]></find>
+      <replace><![CDATA[$0
+<xen:if is="{$tpudetectspamreg_log}"><li style="float:right"><a>Registration Log</a></li></xen:if>]]></replace>
+    </modification>
+    <modification template="user_edit" modification_key="TPUDetectSpamReg2" description="Add Tab Contents" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:if is="{$user.user_id}"><li data-loadurl="{xen:adminlink users/change-log, $user}" id="ChangeLogsTab"><div class="section">{xen:phrase loading}...</div></li></xen:if>]]></find>
+      <replace><![CDATA[$0
+<xen:if is="{$tpudetectspamreg_log}"><li><div class="section">{xen:raw $tpudetectspamreg_log}</div></li></xen:if>]]></replace>
+    </modification>
+    <modification template="log_spam_trigger" modification_key="TPUDetectSpamReg_AddLineBreak" description="Add line break between items" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[1">, </xen:if>]]></find>
+      <replace><![CDATA[1">,<br /></xen:if>]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events>
+    <event event_id="tpu_detect_spam_reg"><![CDATA[<p>Detection plugins should hook into this function.</p>
+
+<p>Callback signature:</p>
+<blockquote><code>&$score, <em>array</em> $user, $verbose, $debug, $model
+</code></blockquote>
+
+Modify the value of $score to adjust scoring.]]></event>
+  </code_events>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenController" active="1" hint="XenForo_ControllerPublic_Register" description=""/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenModel" active="1" hint="XenForo_Model_SpamPrevention" description=""/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenModelModQ" active="1" hint="XenForo_Model_ModerationQueue" description="Add Moderation Queue Listing"/>
+    <listener event_id="load_class_view" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenViewAdmin" active="1" hint="XenForo_ViewAdmin_User_Edit" description=""/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_AS" callback_method="getRegSpamScore" active="1" hint="" description="Check AS"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_StopForumSpam" callback_method="getRegSpamScore" active="1" hint="" description="Check Stop Forum Spam"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_Username" callback_method="getRegSpamScore" active="1" hint="" description="Check Username"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_Email" callback_method="getRegSpamScore" active="1" hint="" description="Check Email"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_Hostname" callback_method="getRegSpamScore" active="1" hint="" description="Check Hostname"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_OpenPort" callback_method="getRegSpamScore" active="1" hint="" description="Check Open Port"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_IPCountry" callback_method="getRegSpamScore" active="1" hint="" description="Check IP Country"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_TOR" callback_method="getRegSpamScore" active="1" hint="" description="Check TOR Exit Node"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_HoneyPot" callback_method="getRegSpamScore" active="1" hint="" description="Check Project Honey Pot"/>
+    <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_EmailLength" callback_method="getRegSpamScore" active="1" hint="" description="Check email length"/>
+  </code_event_listeners>
+  <cron>
+    <entry entry_id="TPUDetectSpamRegCleanup" cron_class="TPUDetectSpamReg_Cleanup" cron_method="cleanup" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["0"],"minutes":["0"]}]]></entry>
+  </cron>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="TPUDetectSpamReg" display_order="10000" debug_only="0"/>
+    <option option_id="TPUDetectSpamRegAS" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+2|VERSAWEB-ASN
++2|SINGLEHOP-INC
++2|OVH
++2|STEEPHOST*
++2|AS-COLOCROSSING
++2|SERVERHUB*
++2|BANKINFORM-AS
++2|AFNCA-ASN
++1|CDC-LMB?
++1|QUERY-FOUNDRY
++1|CANTV
++1|INCERO
++1|BLCC*
++1|EMPIRE
++1|PLI-AS
++1|AS-CHOOPA
++1|WII-KC
++1|UKSERVERS-AS
++1|ECATEL-AS
++1|STEADFAST
++1|SWIFTWAY-AS
++1|ASEVERHOST
++1|RAMNODE
++1|BESTHOSTING-AS
++1|ENZUINC-*
++1|40676
++1|SERVERYOU
++1|DIMENOC
++1|DATASHACK
++1|IOFLOOD
++1|FDCSERVERS
++1|RICAWEBSERVICES
++1|PEGTECHINC
++1|WOWRACK
++1|VOXILITY-AS
++1|SERVER-MANIA
++1|COLO-AT-55-LLC
++1|SERVERIUS-AS
++1|ABSTATION
++1|IPTELLIGENT
++1|PEER1
++1|GORILLASERVERS
++1|WEBEXXPURTS
++1|REDSTATION
++1|VIRPUS
++1|SSASN?
++1|AS-QUADRANET
++1|QUADRANET
++1|VPLSNET
++1|57858
++1|VOLUMEDRIVE
++1|OPPOBOX</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="130"/>
+    </option>
+    <option option_id="TPUDetectSpamRegCloudReport" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="2"/>
+    </option>
+    <option option_id="TPUDetectSpamRegDebug" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="1"/>
+    </option>
+    <option option_id="TPUDetectSpamRegEmail" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+1|*@outlook.com
++1|*.info
++1|*@laposte.net
++1|*.*.*.*.*@*
++10|*@trashmail.ws</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="130"/>
+    </option>
+    <option option_id="TPUDetectSpamRegEmailLen15" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="700"/>
+    </option>
+    <option option_id="TPUDetectSpamRegEmailLen20" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>2</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="710"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHelpText" edit_format="template" data_type="boolean" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params>option_template_tpudetectspamreghelp</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="100"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHoneyPotAPIKey" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="601"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHoneyPotCutoff" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>60</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="602"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHoneyPotEnabled" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="600"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHoneyPotScore10" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="610"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHoneyPotScore80" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>6</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="680"/>
+    </option>
+    <option option_id="TPUDetectSpamRegHostname" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+1|*vpn*
++1|*vps*
++1|*dedi*
+-1|*.gov
+-1|*.mil
++1|*.rdns.ubiquity.io
++1|*.rdns.ubiquityservers.com
++1|*.hostwindsdns.com
++1|*.dedibox.fr
++1|*.linode.com</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="110"/>
+    </option>
+    <option option_id="TPUDetectSpamRegIPCountry" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+1|CN
++1|IN
++1|BD
++1|PK
++1|TH
++1|PH
++1|VN
++1|VE
++1|UA
++1|RU</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="101"/>
+    </option>
+    <option option_id="TPUDetectSpamRegOpenPort" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+1|http
++1|8080
++1|1080
++1|smtp
++1|ssh
++1|ftp</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="120"/>
+    </option>
+    <option option_id="TPUDetectSpamRegSFSEmail" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>3</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="520"/>
+    </option>
+    <option option_id="TPUDetectSpamRegSFSEnabled" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="500"/>
+    </option>
+    <option option_id="TPUDetectSpamRegSFSIp" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>3</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="530"/>
+    </option>
+    <option option_id="TPUDetectSpamRegSFSUsername" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>2</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="510"/>
+    </option>
+    <option option_id="TPUDetectSpamRegScoreMod" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>3</default_value>
+      <edit_format_params>min=0</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="11"/>
+    </option>
+    <option option_id="TPUDetectSpamRegScoreModPosts" edit_format="template" data_type="array" can_backup="1">
+      <default_value>a:3:{s:5:"score";s:1:"3";s:12:"messagecount";s:1:"4";s:9:"purgedays";s:1:"0";}</default_value>
+      <edit_format_params>option_template_tpudetectspamregmodposts</edit_format_params>
+      <sub_options>score
+messagecount
+purgedays</sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="10"/>
+    </option>
+    <option option_id="TPUDetectSpamRegScoreRej" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>6</default_value>
+      <edit_format_params>min=0</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="12"/>
+    </option>
+    <option option_id="TPUDetectSpamRegShowInModQ" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>true</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="900"/>
+    </option>
+    <option option_id="TPUDetectSpamRegSrvIp" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="410"/>
+    </option>
+    <option option_id="TPUDetectSpamRegTORScore" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>3</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="400"/>
+    </option>
+    <option option_id="TPUDetectSpamRegUsername" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>+1|*cheap*
++1|*free*
++1|*card*
++1|*sale*</default_value>
+      <edit_format_params>rows=3</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="140"/>
+    </option>
+    <option option_id="TPUDetectSpamRegVerbose" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="0"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="general" permission_id="TPUSpamRegModAllPosts" permission_type="flag" default_value="unset" interface_group_id="generalPermissions" display_order="99999"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="cron_entry_TPUDetectSpamRegCleanup" version_id="9" version_string="1.6.1"><![CDATA[TPU: Detect Spam Registrations (Cleanup)]]></phrase>
+    <phrase title="option_group_TPUDetectSpamReg" version_id="0" version_string=""><![CDATA[TPU: Detect Spam Registrations]]></phrase>
+    <phrase title="option_group_TPUDetectSpamReg_description" version_id="0" version_string="1.0.0"><![CDATA[This addon provides additional detection methods to identify automated and manual registrations that are looking to spam your forum.<br />
+<b>All rules are score based and cumulative.</b> So, each rule may increase or lower the total score, which at the end, is evaluated to decide whether to accept, moderate or reject a registration.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegAS" version_id="0" version_string="1.0.0"><![CDATA[AS Name]]></phrase>
+    <phrase title="option_TPUDetectSpamRegAS_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|first word of AS name or AS number</I><br />
+ Example:  <I>+1|OVH</I> or <I>+1|16276</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegCloudReport" version_id="6" version_string="1.5.0"><![CDATA[Submit registration data to developer]]></phrase>
+    <phrase title="option_TPUDetectSpamRegCloudReport_explain" version_id="6" version_string="1.5.0"><![CDATA[Data sent: username, ip address, email host (@gmail.com), anonymized email username (SHA1, e.g. 'user' becomes 12dea96fec20593566ab75692c9949596833adc9).
+I'm looking into developing an anti-spam cloud service, for which I need some initial data. Everything will be treated confidential of course.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegDebug" version_id="0" version_string="1.0.0"><![CDATA[Debug Mode]]></phrase>
+    <phrase title="option_TPUDetectSpamRegDebug_explain" version_id="0" version_string="1.0.0"><![CDATA[Logs as much as possible, including the result of every single rule check.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmail" version_id="0" version_string="1.0.0"><![CDATA[Email address]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmailLen15" version_id="0" version_string="1.0.0"><![CDATA[Score if email local part is 15 characters or more]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmailLen15_explain" version_id="0" version_string="1.0.0"><![CDATA[Local part is everything before the @ sign.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmailLen20" version_id="0" version_string="1.0.0"><![CDATA[Score if email local part is 20 characters or more]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmailLen20_explain" version_id="0" version_string="1.0.0"><![CDATA[Local part is everything before the @ sign.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegEmail_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|matchtext</I>. Wildcards * and ? are supported <br />
+Example: <I>+1|*@outlook.com</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHelpText" version_id="1" version_string="1.0.1"><![CDATA[About the text-based rules]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHelpText_explain" version_id="1" version_string="1.0.1"><![CDATA[- All options in this section have one entry per line.<br />
+- Each line starts with the score to give if the rule matches.<br />
+- The score can be positive or negative. High score is bad.<br />
+- All scores from all matched rules are added (math: +) to form the final score.<br />
+- Instead of the numeric score you may also enter text that directly selects one of the actions above. Possible values are <i>moderateposts</i>, <i>moderate</i>, <i>reject</i>.<br />
+So for example (Visitor country filter, to reject all chinese registrations): <i>reject|CN</i>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotAPIKey" version_id="0" version_string="1.0.0"><![CDATA[API Key]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotAPIKey_explain" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotCutoff" version_id="0" version_string="1.0.0"><![CDATA[Only consider reports younger than (days)]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotCutoff_explain" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotEnabled" version_id="0" version_string="1.0.0"><![CDATA[Check Project Honey Pot]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotEnabled_explain" version_id="0" version_string="1.0.0"><![CDATA[API key is required]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotScore10" version_id="0" version_string="1.0.0"><![CDATA[Score if 10..20% threat level detected]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotScore10_explain" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotScore80" version_id="0" version_string="1.0.0"><![CDATA[Score if 80..100% threat level detected]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHoneyPotScore80_explain" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHostname" version_id="0" version_string="1.0.0"><![CDATA[Visitor hostname]]></phrase>
+    <phrase title="option_TPUDetectSpamRegHostname_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|matchtext</I>. Wildcards * and ? are supported <br />
+Example: <I>+1|*.ovh.net</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegIPCountry" version_id="0" version_string="1.0.0"><![CDATA[Visitor country]]></phrase>
+    <phrase title="option_TPUDetectSpamRegIPCountry_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|two-letter country code</I><br />
+Example: <I>+1|CN</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegOpenPort" version_id="0" version_string="1.0.0"><![CDATA[Open TCP port]]></phrase>
+    <phrase title="option_TPUDetectSpamRegOpenPort_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|port name or number</I><br />
+Example: <I>+1|http</I> or <I>+1|1080</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreMod" version_id="0" version_string="1.0.0"><![CDATA[Minimum score required to moderate user]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreModPosts" version_id="1" version_string="1.0.1"><![CDATA[Minimum score required to moderate all posts]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreModPosts_explain" version_id="1" version_string="1.0.1"><![CDATA[0 to disable.<br />
+When this rule is matched, it will approve the registration, but send all new posts into the moderation queue.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreMod_explain" version_id="1" version_string="1.0.1"><![CDATA[0 to disable.<br />
+When this rule is matched, it will accept the registration, but mark the user account as moderated, so you need to approve the account manually before it can post.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreRej" version_id="0" version_string="1.0.0"><![CDATA[Minimum score required to reject user]]></phrase>
+    <phrase title="option_TPUDetectSpamRegScoreRej_explain" version_id="1" version_string="1.0.1"><![CDATA[0 to disable.
+When this rule is matched, it will reject the registration, no account will be created.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSEmail" version_id="0" version_string="1.0.0"><![CDATA[Score if StopForumSpam known email detected]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSEmail_explain" version_id="0" version_string="1.0.0"><![CDATA[0 to disable.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSEnabled" version_id="0" version_string="1.0.0"><![CDATA[Query StopForumSpam]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSEnabled_explain" version_id="0" version_string="1.0.0"><![CDATA[SFS does not have to be enabled or configured in XenForo, and you don't need an API key.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSIp" version_id="0" version_string="1.0.0"><![CDATA[Score if StopForumSpam known IP detected]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSIp_explain" version_id="0" version_string="1.0.0"><![CDATA[0 to disable.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSUsername" version_id="0" version_string="1.0.0"><![CDATA[Score if StopForumSpam known username detected]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSFSUsername_explain" version_id="0" version_string="1.0.0"><![CDATA[0 to disable.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegShowInModQ" version_id="5" version_string="1.4.0"><![CDATA[Show spam reg log in moderation queue]]></phrase>
+    <phrase title="option_TPUDetectSpamRegShowInModQ_explain" version_id="5" version_string="1.4.0"><![CDATA[]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSrvIp" version_id="5" version_string="1.4.0"><![CDATA[Your server's address]]></phrase>
+    <phrase title="option_TPUDetectSpamRegSrvIp_explain" version_id="5" version_string="1.4.0"><![CDATA[Can be left empty for autodetect, but must be provided if your server is behind a reverse proxy. Enter IP or hostname, separated by comma (,) if multiple.]]></phrase>
+    <phrase title="option_TPUDetectSpamRegTORScore" version_id="0" version_string="1.0.0"><![CDATA[Score if using TOR exit node]]></phrase>
+    <phrase title="option_TPUDetectSpamRegTORScore_explain" version_id="0" version_string="1.0.0"><![CDATA[0 to disable]]></phrase>
+    <phrase title="option_TPUDetectSpamRegUsername" version_id="0" version_string="1.0.0"><![CDATA[Username]]></phrase>
+    <phrase title="option_TPUDetectSpamRegUsername_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|matchtext</I>. Wildcards * and ? are supported <br />
+Example: <I>+1|*free*</I>]]></phrase>
+    <phrase title="option_TPUDetectSpamRegVerbose" version_id="0" version_string="1.0.0"><![CDATA[Verbose Mode]]></phrase>
+    <phrase title="option_TPUDetectSpamRegVerbose_explain" version_id="0" version_string="1.0.0"><![CDATA[Recommended, so you see detailed activity in the spam trigger log]]></phrase>
+    <phrase title="permission_general_TPUSpamRegModAllPosts" version_id="1" version_string="1.0.1"><![CDATA[TPU: Detect Spam Reg - Moderate all posts]]></phrase>
+    <phrase title="tpu_detectspamreg_as_detected" version_id="0" version_string="1.0.0"><![CDATA[AS detected: ASN{number}, {name}]]></phrase>
+    <phrase title="tpu_detectspamreg_as_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. AS matched: ASN{number}, {name}]]></phrase>
+    <phrase title="tpu_detectspamreg_as_ok" version_id="0" version_string="1.0.0"><![CDATA[AS not matched: ASN{number}, {name}]]></phrase>
+    <phrase title="tpu_detectspamreg_checking" version_id="0" version_string="1.0.0"><![CDATA[TPUDetectSpamReg checking: {username}, {email}, {ip}]]></phrase>
+    <phrase title="tpu_detectspamreg_country_detected" version_id="0" version_string="1.0.0"><![CDATA[Country detected: {country}]]></phrase>
+    <phrase title="tpu_detectspamreg_country_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Country matched: {country}]]></phrase>
+    <phrase title="tpu_detectspamreg_country_ok" version_id="0" version_string="1.0.0"><![CDATA[Country not matched: {country}]]></phrase>
+    <phrase title="tpu_detectspamreg_emaillen_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Email local part exceeds {length} chars: {email}]]></phrase>
+    <phrase title="tpu_detectspamreg_emaillen_ok" version_id="0" version_string="1.0.0"><![CDATA[Email local part shorter than {length} chars: {email}]]></phrase>
+    <phrase title="tpu_detectspamreg_email_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Email matched: {email}]]></phrase>
+    <phrase title="tpu_detectspamreg_email_ok" version_id="0" version_string="1.0.0"><![CDATA[Email not matched: {email}]]></phrase>
+    <phrase title="tpu_detectspamreg_fail_mod" version_id="0" version_string="1.0.0"><![CDATA[Moderated. Score exceeded ({score} >= {required})]]></phrase>
+    <phrase title="tpu_detectspamreg_fail_modposts" version_id="1" version_string="1.0.1"><![CDATA[New Posts Moderated. Score exceeded ({score} >= {required})]]></phrase>
+    <phrase title="tpu_detectspamreg_fail_rej" version_id="0" version_string="1.0.0"><![CDATA[Rejected. Score exceeded ({score} >= {required})]]></phrase>
+    <phrase title="tpu_detectspamreg_honeypot_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Project Honeypot hit: {threatlevel}%, {lastseen} days]]></phrase>
+    <phrase title="tpu_detectspamreg_honeypot_ok" version_id="0" version_string="1.0.0"><![CDATA[Project Honeypot, no hit]]></phrase>
+    <phrase title="tpu_detectspamreg_honeypot_pass" version_id="0" version_string="1.0.0"><![CDATA[Project Honeypot, no hit: {threatlevel}%, {lastseen} days]]></phrase>
+    <phrase title="tpu_detectspamreg_hostname_detected" version_id="0" version_string="1.0.0"><![CDATA[Hostname detected: {hostname}]]></phrase>
+    <phrase title="tpu_detectspamreg_hostname_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Hostname matched: {hostname}]]></phrase>
+    <phrase title="tpu_detectspamreg_hostname_ok" version_id="0" version_string="1.0.0"><![CDATA[Hostname not matched: {hostname}]]></phrase>
+    <phrase title="tpu_detectspamreg_port_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Port open: {port}]]></phrase>
+    <phrase title="tpu_detectspamreg_port_ok" version_id="0" version_string="1.0.0"><![CDATA[Port closed: {port}]]></phrase>
+    <phrase title="tpu_detectspamreg_sfs_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. SFS hit: {flag}]]></phrase>
+    <phrase title="tpu_detectspamreg_sfs_ok" version_id="0" version_string="1.0.0"><![CDATA[SFS ok: {flag}]]></phrase>
+    <phrase title="tpu_detectspamreg_tor_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. TOR exit node]]></phrase>
+    <phrase title="tpu_detectspamreg_tor_ok" version_id="0" version_string="1.0.0"><![CDATA[TOR exit node not detected.]]></phrase>
+    <phrase title="tpu_detectspamreg_totalscore" version_id="0" version_string="1.0.0"><![CDATA[Total score: {score}]]></phrase>
+    <phrase title="tpu_detectspamreg_username_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. Username matched {username}]]></phrase>
+    <phrase title="tpu_detectspamreg_username_ok" version_id="0" version_string="1.0.0"><![CDATA[Username not matched: {username}]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates/>
+  <public_template_modifications>
+    <modification template="moderation_queue_list" modification_key="Add_Registration_Log" description="Add_Registration_Log" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<dl class="ctrlUnit">\s*<dt>{xen:phrase posted_by}:</dt>.*</dl>#Us]]></find>
+      <replace><![CDATA[$0
+
+<xen:if is="{$entry.content.tpudetectspamreg_log}">
+<dl class="ctrlUnit"><dt>User Registration Log:</dt>
+<dd style="font-family:monospace;font-size:11px">{xen:raw $entry.content.tpudetectspamreg_log}</dd></dl>
+</xen:if>]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
