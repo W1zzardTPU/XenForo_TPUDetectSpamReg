@@ -150,12 +150,6 @@ Modify the value of $score to adjust scoring.]]></event>
       <sub_options></sub_options>
       <relation group_id="TPUDetectSpamReg" display_order="130"/>
     </option>
-    <option option_id="TPUDetectSpamRegCloudReport" edit_format="onoff" data_type="boolean" can_backup="1">
-      <default_value>1</default_value>
-      <edit_format_params></edit_format_params>
-      <sub_options></sub_options>
-      <relation group_id="TPUDetectSpamReg" display_order="2"/>
-    </option>
     <option option_id="TPUDetectSpamRegDebug" edit_format="onoff" data_type="boolean" can_backup="1">
       <default_value>0</default_value>
       <edit_format_params></edit_format_params>
@@ -354,9 +348,6 @@ purgedays</sub_options>
     <phrase title="option_TPUDetectSpamRegAS" version_id="0" version_string="1.0.0"><![CDATA[AS Name]]></phrase>
     <phrase title="option_TPUDetectSpamRegAS_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|first word of AS name or AS number</I><br />
  Example:  <I>+1|OVH</I> or <I>+1|16276</I>]]></phrase>
-    <phrase title="option_TPUDetectSpamRegCloudReport" version_id="6" version_string="1.5.0"><![CDATA[Submit registration data to developer]]></phrase>
-    <phrase title="option_TPUDetectSpamRegCloudReport_explain" version_id="6" version_string="1.5.0"><![CDATA[Data sent: username, ip address, email host (@gmail.com), anonymized email username (SHA1, e.g. 'user' becomes 12dea96fec20593566ab75692c9949596833adc9).
-I'm looking into developing an anti-spam cloud service, for which I need some initial data. Everything will be treated confidential of course.]]></phrase>
     <phrase title="option_TPUDetectSpamRegDebug" version_id="0" version_string="1.0.0"><![CDATA[Debug Mode]]></phrase>
     <phrase title="option_TPUDetectSpamRegDebug_explain" version_id="0" version_string="1.0.0"><![CDATA[Logs as much as possible, including the result of every single rule check.]]></phrase>
     <phrase title="option_TPUDetectSpamRegEmail" version_id="0" version_string="1.0.0"><![CDATA[Email address]]></phrase>

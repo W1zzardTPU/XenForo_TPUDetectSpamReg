@@ -59,31 +59,6 @@ class TPUDetectSpamReg_ModelSpamPrevention extends XFCP_TPUDetectSpamReg_ModelSp
 
 			$o=XenForo_Application::getOptions();
 
-			if ($o->TPUDetectSpamRegCloudReport)
-			{
-				list($email, $domain)=explode('@', $user['email']);
-				$email=sha1($email);
-
-				$postfields=array(
-					'username'=>$user['username'],
-					'ip'=>$user['ip'],
-					'email_user'=>$email,
-					'email_host'=>$domain
-				);
-
-				$ch=curl_init();
-				curl_setopt($ch, CURLOPT_URL, 'https://www.techpowerup.com/xf_antispam/check.php');
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-				curl_setopt($ch, CURLOPT_POST, 1);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-				curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-				$curl_result=curl_exec($ch);
-
-				curl_close($ch);
-			}
-
 			if ($o->TPUDetectSpamRegVerbose)
 			$this->logScore('tpu_detectspamreg_checking', 0, array('username'=>$user['username'], 'email'=>$user['email'], 'ip'=>$user['ip']));
 
