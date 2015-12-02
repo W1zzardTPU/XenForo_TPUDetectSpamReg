@@ -27,93 +27,93 @@ class TPUDetectSpamReg_AS
 		return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 	}
 	
-  static function getASNameAndNumber($ip, &$asNumber, &$asName)
-  {
+	static function getASNameAndNumber($ip, &$asNumber, &$asName)
+	{
 		if (self::isIPv6($ip))
 			$dns=dns_get_record(self::reverseIPv6($ip).'.origin6.asn.cymru.com', DNS_TXT);
 		else
-  		$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
-  		
+			$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
+			
 		if ((is_array($dns)) && (isset($dns[0])))
 		{
 			$items=explode('|', $dns[0]['txt'], 2);
 			$items=array_shift($items);
-  		$asNumber=intval($items);
-		  if ($asNumber>0)
-  		{
-    		$dns=dns_get_record('AS'.$asNumber.'.asn.cymru.com', DNS_TXT);
-    		if ((is_array($dns)) && (isset($dns[0])))
-    		{
-      		$tokens=explode('|', $dns[0]['txt']);
-      		$asName=trim($tokens[4]);
+			$asNumber=intval($items);
+			if ($asNumber>0)
+			{
+				$dns=dns_get_record('AS'.$asNumber.'.asn.cymru.com', DNS_TXT);
+				if ((is_array($dns)) && (isset($dns[0])))
+				{
+					$tokens=explode('|', $dns[0]['txt']);
+					$asName=trim($tokens[4]);
 
-      		return TRUE;
-    		}
-  		}
+					return TRUE;
+				}
+			}
 		}
 
 		return FALSE;
 
 		// Old slow code
-    try {
-      $networkinfo=json_decode(file_get_contents('https://stat.ripe.net/data/network-info/data.json?resource='.$ip));
-      $asNumber=$networkinfo->data->asns[0];
-      $asInfo=json_decode(file_get_contents('https://stat.ripe.net/data/as-overview/data.json?resource=AS'.$asNumber));
-      $asName=$asInfo->data->holder;
+		try {
+			$networkinfo=json_decode(file_get_contents('https://stat.ripe.net/data/network-info/data.json?resource='.$ip));
+			$asNumber=$networkinfo->data->asns[0];
+			$asInfo=json_decode(file_get_contents('https://stat.ripe.net/data/as-overview/data.json?resource=AS'.$asNumber));
+			$asName=$asInfo->data->holder;
 
-      return TRUE;
-    } catch (Exception $e) {};
+			return TRUE;
+		} catch (Exception $e) {};
 
-    return FALSE;
-  }
+		return FALSE;
+	}
 
 	static function getRegSpamScore(&$score, array $user, $verbose, $debug, $model)
 	{
 		$o=XenForo_Application::getOptions();
 
-  	if (trim($o->TPUDetectSpamRegAS)!='')
-  	{
-      if (self::getASNameAndNumber($user['ip'], $asNumber, $asName))
-      {
-      	if ($verbose)
-      		$model->logScore('tpu_detectspamreg_as_detected', 0, array('number'=>$asNumber, 'name'=>$asName));
+		if (trim($o->TPUDetectSpamRegAS)!='')
+		{
+			if (self::getASNameAndNumber($user['ip'], $asNumber, $asName))
+			{
+				if ($verbose)
+					$model->logScore('tpu_detectspamreg_as_detected', 0, array('number'=>$asNumber, 'name'=>$asName));
 
-  			foreach (explode("\n", $o->TPUDetectSpamRegAS) as $entry)
-  			{
-  				$entry=explode('|', trim($entry));
-  				if (count($entry)!=2)
-  					continue;
+				foreach (explode("\n", $o->TPUDetectSpamRegAS) as $entry)
+				{
+					$entry=explode('|', trim($entry));
+					if (count($entry)!=2)
+						continue;
 
-    			list($points, $match)=$entry;
+					list($points, $match)=$entry;
 
-    			if ((is_numeric($match)) && ($match>0))
-    			{
-    				if ((int)$match==(int)$asNumber)
-    				{
-    					$model->logScore('tpu_detectspamreg_as_fail', $points, array('number'=>$asNumber, 'name'=>$asName));
-                        if (is_numeric($points))
-                            $score['points']+=$points;
-                        else
-                            $score[$points]=true;
-    				}
-    			} else
-    			{
-    				$asName=strtok($asName, ' ');
-  					$regex=$model->buildWildcardRegex($match);
+					if ((is_numeric($match)) && ($match>0))
+					{
+						if ((int)$match==(int)$asNumber)
+						{
+							$model->logScore('tpu_detectspamreg_as_fail', $points, array('number'=>$asNumber, 'name'=>$asName));
+												if (is_numeric($points))
+														$score['points']+=$points;
+												else
+														$score[$points]=true;
+						}
+					} else
+					{
+						$asName=strtok($asName, ' ');
+						$regex=$model->buildWildcardRegex($match);
 
-  					if (preg_match('/^'.$regex.'$/iU', $asName))
-  					{
-    					$model->logScore('tpu_detectspamreg_as_fail', $points, array('number'=>$asNumber, 'name'=>$asName));
+						if (preg_match('/^'.$regex.'$/iU', $asName))
+						{
+							$model->logScore('tpu_detectspamreg_as_fail', $points, array('number'=>$asNumber, 'name'=>$asName));
 							if (is_numeric($points))
-							    $score['points']+=$points;
+									$score['points']+=$points;
 							else
-							    $score[$points]=true;
-    				} else
-    					if ($debug)
-    						$model->logScore('tpu_detectspamreg_as_ok', 0, array('number'=>$asNumber, 'name'=>$match));
-    			}
-  			}
-      }
-  	}
+									$score[$points]=true;
+						} else
+							if ($debug)
+								$model->logScore('tpu_detectspamreg_as_ok', 0, array('number'=>$asNumber, 'name'=>$match));
+					}
+				}
+			}
+		}
 	}
 }

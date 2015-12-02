@@ -6,12 +6,12 @@ class TPUDetectSpamReg_HoneyPot
 	{
 		$o=XenForo_Application::getOptions();
 
-  	if ($o->TPUDetectSpamRegHoneyPotEnabled)
-  	{
-  		// Only IPv4 supported
-  		if (filter_var($user['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)==FALSE)
-  			return;
-  		
+		if ($o->TPUDetectSpamRegHoneyPotEnabled)
+		{
+			// Only IPv4 supported
+			if (filter_var($user['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)==FALSE)
+				return;
+			
 			$dnsBl=new XenForo_DnsBl($o->TPUDetectSpamRegHoneyPotAPIKey.'.%s.dnsbl.httpbl.org');
 			$res=$dnsBl->checkIp($user['ip']);
 			if (is_array($res))
@@ -46,6 +46,6 @@ class TPUDetectSpamReg_HoneyPot
 						$model->logScore('tpu_detectspamreg_honeypot_ok', 0);
 				}
 			}
-   	}
+		}
 	}
 }

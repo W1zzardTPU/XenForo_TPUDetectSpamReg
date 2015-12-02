@@ -29,8 +29,8 @@ class TPUDetectSpamReg_StopForumSpam
 									$flagsDetected[$flagName]=true;
 							}
 
-  						if ($debug)
-  							if (!$flagsDetected[$flagName])
+							if ($debug)
+								if (!$flagsDetected[$flagName])
 									$model->logScore('tpu_detectspamreg_sfs_ok', 0, array('flag'=>$flagName));
 						}
 					}

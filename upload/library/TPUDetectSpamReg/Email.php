@@ -7,30 +7,30 @@ class TPUDetectSpamReg_Email
 		$o=XenForo_Application::getOptions();
 
 		if (trim($o->TPUDetectSpamRegEmail)!='')
-  	{
-  		$email=$user['email'];
+		{
+			$email=$user['email'];
 
-  		foreach (explode("\n", $o->TPUDetectSpamRegEmail) as $entry)
-  		{
+			foreach (explode("\n", $o->TPUDetectSpamRegEmail) as $entry)
+			{
 				$entry=explode('|', trim($entry));
-  			if (count($entry)!=2)
-  				continue;
+				if (count($entry)!=2)
+					continue;
 
-  			list($points, $match)=$entry;
+				list($points, $match)=$entry;
 
-  			$regex=$model->buildWildcardRegex($match);
+				$regex=$model->buildWildcardRegex($match);
 
-  			if (preg_match('/^'.$regex.'$/iU', $email))
-  			{
-  				$model->logScore('tpu_detectspamreg_email_fail', $points, array('email'=>$match));
-  				if (is_numeric($points))
-  					$score['points']+=$points;
-  				else
-  					$score[$points]=true;
-  			} else
-  				if ($debug)
-  					$model->logScore('tpu_detectspamreg_email_ok', 0, array('email'=>$match));
-  		}
-  	}
+				if (preg_match('/^'.$regex.'$/iU', $email))
+				{
+					$model->logScore('tpu_detectspamreg_email_fail', $points, array('email'=>$match));
+					if (is_numeric($points))
+						$score['points']+=$points;
+					else
+						$score[$points]=true;
+				} else
+					if ($debug)
+						$model->logScore('tpu_detectspamreg_email_ok', 0, array('email'=>$match));
+			}
+		}
 	}
 }
