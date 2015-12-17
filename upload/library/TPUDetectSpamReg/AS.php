@@ -37,7 +37,7 @@ class TPUDetectSpamReg_AS
 				$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
 		} catch(Exception $e) {}
 			
-		if ((is_array($dns)) && (isset($dns[0])))
+		if (isset($dns[0]))
 		{
 			$items=explode('|', $dns[0]['txt'], 2);
 			$items=array_shift($items);
