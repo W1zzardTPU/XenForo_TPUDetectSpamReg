@@ -17,6 +17,13 @@ class TPUDetectSpamReg_IPCountry
 
 		try
 		{
+			$country=json_decode(file_get_contents('https://freegeoip.net/json/'.$ip));
+			if (isset($country) && isset($country->country_code) && $country->country_code!='')
+				return $country->country_code;
+		} catch(Exception $e) {}
+
+		try
+		{
 			$country=json_decode(file_get_contents('http://ip-api.com/json/'.$ip));
 			if (isset($country) && isset($country->countryCode) && $country->countryCode!='')
 				return $country->countryCode;
