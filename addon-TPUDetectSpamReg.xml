@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.5" version_id="1060500" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.7.0" version_id="1070000" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -43,6 +43,28 @@
 	<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
 	{xen:raw $editLink}
 
+</xen:controlunit>]]></template>
+    <template title="TPUDetectSpamRegASMethod"><![CDATA[<xen:controlunit label="{$preparedOption.title}">
+<ul class="FieldChoices">
+    <xen:foreach loop="$preparedOption.option_value" key="$choice" value="$method">
+        <xen:if is="{$method} && ({$method.url} || {$method.property})">
+            <li>
+                <input type="checkbox" name="{$fieldPrefix}[{$preparedOption.option_id}][{$choice}][enable]" value="1" {xen:checked {$method.enable}} />
+                <input type="text" name="{$fieldPrefix}[{$preparedOption.option_id}][{$choice}][url]" value="{$method.url}" class="textCtrl" placeholder="{xen:phrase text}" size="50" />
+                <input type="text" name="{$fieldPrefix}[{$preparedOption.option_id}][{$choice}][property]" value="{$method.property}" class="textCtrl" placeholder="{xen:phrase text}" size="10" />
+            </li>
+        </xen:if>
+    </xen:foreach>
+    <li>
+        <input type="checkbox" name="{$fieldPrefix}[{$preparedOption.option_id}][new][][enable]" value="1" />
+        <input type="text" name="{$fieldPrefix}[{$preparedOption.option_id}][new][][url]" value="" class="textCtrl" placeholder="{xen:phrase text}" size="50" />
+        <input type="text" name="{$fieldPrefix}[{$preparedOption.option_id}][new][][property]" value="" class="textCtrl" placeholder="{xen:phrase text}" size="10" />
+    </li>
+</ul>
+<input type="button" value="{xen:phrase add_additional_choice}" class="button smallButton FieldAdder" data-source="ul.FieldChoices li" />
+
+<p class="explain">{xen:raw $preparedOption.explain}</p>
+{xen:raw $editLink}
 </xen:controlunit>]]></template>
   </admin_templates>
   <admin_template_modifications>
@@ -149,6 +171,12 @@ Modify the value of $score to adjust scoring.]]></event>
       <edit_format_params>rows=3</edit_format_params>
       <sub_options></sub_options>
       <relation group_id="TPUDetectSpamReg" display_order="130"/>
+    </option>
+    <option option_id="TPUDetectSpamRegASMethods" edit_format="template" data_type="array" can_backup="1" validation_class="TPUDetectSpamReg_Option_Methods" validation_method="verifyOption">
+      <default_value>a:4:{i:0;a:3:{s:3:"url";s:27:"http://ipinfo.io/%s/country";s:8:"property";s:0:"";s:6:"enable";i:1;}i:1;a:3:{s:3:"url";s:25:"http://ip-api.com/json/%s";s:8:"property";s:11:"countryCode";s:6:"enable";i:1;}i:2;a:3:{s:3:"url";s:41:"http://api.hostip.info/country.php?ip=/%s";s:8:"property";s:0:"";s:6:"enable";i:1;}i:3;a:3:{s:3:"url";s:29:"https://freegeoip.net/json/%s";s:8:"property";s:12:"country_code";s:6:"enable";i:0;}}</default_value>
+      <edit_format_params>TPUDetectSpamRegASMethod</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="1000"/>
     </option>
     <option option_id="TPUDetectSpamRegDebug" edit_format="onoff" data_type="boolean" can_backup="1">
       <default_value>0</default_value>
@@ -346,6 +374,8 @@ purgedays</sub_options>
     <phrase title="option_group_TPUDetectSpamReg_description" version_id="0" version_string="1.0.0"><![CDATA[This addon provides additional detection methods to identify automated and manual registrations that are looking to spam your forum.<br />
 <b>All rules are score based and cumulative.</b> So, each rule may increase or lower the total score, which at the end, is evaluated to decide whether to accept, moderate or reject a registration.]]></phrase>
     <phrase title="option_TPUDetectSpamRegAS" version_id="0" version_string="1.0.0"><![CDATA[AS Name]]></phrase>
+    <phrase title="option_TPUDetectSpamRegASMethods" version_id="1070000" version_string="1.7.0"><![CDATA[IP Country Detection methods]]></phrase>
+    <phrase title="option_TPUDetectSpamRegASMethods_explain" version_id="1070000" version_string="1.7.0"><![CDATA[Methods used to resolve an IP to a country 2 or 3 letter code]]></phrase>
     <phrase title="option_TPUDetectSpamRegAS_explain" version_id="0" version_string="1.0.0"><![CDATA[One entry per line. Format: <i>score|first word of AS name or AS number</I><br />
  Example:  <I>+1|OVH</I> or <I>+1|16276</I>]]></phrase>
     <phrase title="option_TPUDetectSpamRegDebug" version_id="0" version_string="1.0.0"><![CDATA[Debug Mode]]></phrase>

@@ -2,11 +2,37 @@
 
 class TPUDetectSpamReg_IPCountry
 {
+	static function getJsonPropertyFromUrl($url, $property)
+	{
+		$ctx = stream_context_create(array(
+			'http' => array(
+				'header'  => implode(array('Connection: close'), "\r\n"),
+				'method'  => 'GET',
+				'content' => '',
+				'timeout' => .5,
+			),
+		));
+		try
+		{
+			$data = file_get_contents($url, false, $ctx);
+			if ($property)
+			{
+				$data=json_decode($data);
+				if (isset($data) && isset($data->property) && $data->property != '')
+					return $data->property;
+			}
+			else
+				return $data;
+		}
+		catch(Exception $e) {}
+		return null;
+	}
+
 	static function getIPCountry($ip)
 	{
 		if (function_exists('geoip_db_avail') && geoip_db_avail(GEOIP_COUNTRY_EDITION))
 		{
-			try 
+			try
 			{
 				try
 				{
@@ -15,19 +41,30 @@ class TPUDetectSpamReg_IPCountry
 			} catch(ErrorException $e) {}
 		}
 
-		try
-		{
-			$country=json_decode(file_get_contents('http://ip-api.com/json/'.$ip));
-			if (isset($country) && isset($country->countryCode) && $country->countryCode!='')
-				return $country->countryCode;
-		} catch(Exception $e) {}
+        $methods = XenForo_Application::getOptions->TPUDetectSpamRegASMethods;
+        if (empty($methods))
+        {
+            $methods = array(
+                array('url'=> 'http://ipinfo.io/%s/country', 'property' => '', 'enable'=>1),
+                array('url'=> 'http://ip-api.com/json/%s', 'property' => 'countryCode', 'enable'=>1),
+                array('url'=> 'http://api.hostip.info/country.php?ip=/%s', 'property' => '', 'enable'=>1),
+                array('url'=> 'https://freegeoip.net/json/%s', 'property' => 'country_code', 'enable'=>0),
+            );
+        }
 
-		try
+		foreach($methods as $method)
 		{
-			$country=json_decode(file_get_contents('https://freegeoip.net/json/'.$ip));
-			if (isset($country) && isset($country->country_code) && $country->country_code!='')
-				return $country->country_code;
-		} catch(Exception $e) {}
+			if (empty($method['enable'])) continue;
+			$url = sprintf($method['url'], $ip);
+			$country = self::getJsonPropertyFromUrl($url, $method['property']);
+			if (empty($country))
+				continue;
+			$country = strtoupper(trim($country));
+			if ($country == 'XX' || empty($country))
+				continue;
+			if ($country)
+				return $country;
+		}
 
 		return 'XX';
 	}
