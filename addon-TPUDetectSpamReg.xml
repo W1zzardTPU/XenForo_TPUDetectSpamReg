@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.5" version_id="1060500" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.6" version_id="1060600" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -333,6 +333,24 @@ purgedays</sub_options>
       <sub_options></sub_options>
       <relation group_id="TPUDetectSpamReg" display_order="0"/>
     </option>
+    <option option_id="tpu_asn_cymru" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="810"/>
+    </option>
+    <option option_id="tpu_asn_moocherio" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="820"/>
+    </option>
+    <option option_id="tpu_asn_ripe" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="TPUDetectSpamReg" display_order="830"/>
+    </option>
   </optiongroups>
   <permissions>
     <permission_groups/>
@@ -412,6 +430,12 @@ When this rule is matched, it will reject the registration, no account will be c
 Example: <I>+1|*free*</I>]]></phrase>
     <phrase title="option_TPUDetectSpamRegVerbose" version_id="0" version_string="1.0.0"><![CDATA[Verbose Mode]]></phrase>
     <phrase title="option_TPUDetectSpamRegVerbose_explain" version_id="0" version_string="1.0.0"><![CDATA[Recommended, so you see detailed activity in the spam trigger log]]></phrase>
+    <phrase title="option_tpu_asn_cymru" version_id="1060600" version_string="1.6.6"><![CDATA[Use Team Cymru DSN API for ASN lookup]]></phrase>
+    <phrase title="option_tpu_asn_cymru_explain" version_id="1060600" version_string="1.6.6"><![CDATA[]]></phrase>
+    <phrase title="option_tpu_asn_moocherio" version_id="1060600" version_string="1.6.6"><![CDATA[Use moocher.io HTTP API for ASN lookup]]></phrase>
+    <phrase title="option_tpu_asn_moocherio_explain" version_id="1060600" version_string="1.6.6"><![CDATA[]]></phrase>
+    <phrase title="option_tpu_asn_ripe" version_id="1060600" version_string="1.6.6"><![CDATA[Use RIPE HTTP API for ASN lookup]]></phrase>
+    <phrase title="option_tpu_asn_ripe_explain" version_id="1060600" version_string="1.6.6"><![CDATA[Slow!]]></phrase>
     <phrase title="permission_general_TPUSpamRegModAllPosts" version_id="1" version_string="1.0.1"><![CDATA[TPU: Detect Spam Reg - Moderate all posts]]></phrase>
     <phrase title="tpu_detectspamreg_as_detected" version_id="0" version_string="1.0.0"><![CDATA[AS detected: ASN{number}, {name}]]></phrase>
     <phrase title="tpu_detectspamreg_as_fail" version_id="0" version_string="1.0.0"><![CDATA[{score}. AS matched: ASN{number}, {name}]]></phrase>
