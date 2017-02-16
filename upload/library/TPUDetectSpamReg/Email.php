@@ -27,8 +27,7 @@ class TPUDetectSpamReg_Email
 						$score['points']+=$points;
 					else
 						$score[$points]=true;
-				} else
-					if ($debug)
+				} elseif ($debug)
 						$model->logScore('tpu_detectspamreg_email_ok', 0, array('email'=>$match));
 			}
 		}

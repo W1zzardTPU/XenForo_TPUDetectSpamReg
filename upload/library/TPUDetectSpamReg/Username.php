@@ -27,8 +27,7 @@ class TPUDetectSpamReg_Username
 						$score['points']+=$points;
 					else
 						$score[$points]=true;
-				} else
-					if ($debug)
+				} elseif ($debug)
 						$model->logScore('tpu_detectspamreg_username_ok', 0, array('username'=>$match));
 			}
 		}

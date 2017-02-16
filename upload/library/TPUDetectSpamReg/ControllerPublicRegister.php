@@ -2,10 +2,10 @@
 
 class TPUDetectSpamReg_ControllerPublicRegister extends XFCP_TPUDetectSpamReg_ControllerPublicRegister
 {
-	protected function _completeRegistration(array $user, array $extraParams = array())
+	protected function _completeRegistration(array $user, array $extraParams=array())
 	{
 		$result=parent::_completeRegistration($user, $extraParams);
-		
+
 		if (class_exists('TPUDetectSpamReg_ModelSpamPrevention', false))
 		{
 			if (TPUDetectSpamReg_ModelSpamPrevention::$moderateAllPosts)

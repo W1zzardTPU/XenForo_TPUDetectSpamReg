@@ -16,8 +16,7 @@ class TPUDetectSpamReg_EmailLength
 				$model->logScore('tpu_detectspamreg_emaillen_fail', $o->TPUDetectSpamRegEmailLen20, array('length'=>20, 'email'=>$email));
 				$score['points']+=$o->TPUDetectSpamRegEmailLen20;
 				return;
-			} else
-				if ($debug)
+			} elseif ($debug)
 					$model->logScore('tpu_detectspamreg_emaillen_ok', 0, array('length'=>20, 'email'=>$email));
 		}
 
@@ -28,8 +27,7 @@ class TPUDetectSpamReg_EmailLength
 				$model->logScore('tpu_detectspamreg_emaillen_fail', $o->TPUDetectSpamRegEmailLen15, array('length'=>15, 'email'=>$email));
 				$score['points']+=$o->TPUDetectSpamRegEmailLen15;
 				return;
-			} else
-				if ($debug)
+			} elseif ($debug)
 					$model->logScore('tpu_detectspamreg_emaillen_ok', 0, array('length'=>15, 'email'=>$email));
 		}
 	}

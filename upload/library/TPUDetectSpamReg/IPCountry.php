@@ -6,7 +6,7 @@ class TPUDetectSpamReg_IPCountry
 	{
 		if (function_exists('geoip_db_avail') && geoip_db_avail(GEOIP_COUNTRY_EDITION))
 		{
-			try 
+			try
 			{
 				try
 				{

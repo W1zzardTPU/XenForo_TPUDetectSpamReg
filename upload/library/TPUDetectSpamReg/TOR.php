@@ -21,7 +21,7 @@ class TPUDetectSpamReg_TOR
 		if ($o->TPUDetectSpamRegTORScore!=0)
 		{
 			// Only IPv4 supported
-			if (filter_var($user['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)==FALSE)
+			if (filter_var($user['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)==false)
 				return;
 
 			$srvIp=array();

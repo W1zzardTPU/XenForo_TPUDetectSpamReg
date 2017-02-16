@@ -108,16 +108,14 @@ class TPUDetectSpamReg_ModelSpamPrevention extends XFCP_TPUDetectSpamReg_ModelSp
 			{
 				$this->logScore('Rejected. Direct rule selection triggered', 0);
 				$action=self::TPURESULT_DENIED;
-			} else
-				if ((isset($score['moderate']) && ($score['moderate'])))
+			} elseif ((isset($score['moderate']) && ($score['moderate'])))
 				{
 					if ($action!=self::TPURESULT_DENIED)
 					{
 						$this->logScore('Moderated. Direct rule selection triggered', 0);
 						$action=self::TPURESULT_MODERATED;
 					}
-				} else
-					if ((isset($score['moderateposts']) && ($score['moderateposts'])))
+				} elseif ((isset($score['moderateposts']) && ($score['moderateposts'])))
 					{
 						if (($action!=self::TPURESULT_DENIED) && ($action!=self::TPURESULT_MODERATED))
 						{
@@ -138,18 +136,18 @@ class TPUDetectSpamReg_ModelSpamPrevention extends XFCP_TPUDetectSpamReg_ModelSp
 			return $result;
 		}
 
-		public function logSpamTrigger($contentType, $contentId, $result = null, array $details = null, $userId = null, $ipAddress = null)
+		public function logSpamTrigger($contentType, $contentId, $result=null, array $details=null, $userId=null, $ipAddress=null)
 		{
 			if ($result === null)
 			{
 				$result = $this->getLastCheckResult();
 			}
 
-			$hax=FALSE;
+			$hax=false;
 			if ($result==self::RESULT_ALLOWED)
 			{
 				$result=self::RESULT_MODERATED;
-				$hax=TRUE;
+				$hax=true;
 			}
 
 			$return=parent::logSpamTrigger($contentType, $contentId, $result, $details, $userId, $ipAddress);
@@ -160,13 +158,13 @@ class TPUDetectSpamReg_ModelSpamPrevention extends XFCP_TPUDetectSpamReg_ModelSp
 			return $return;
 		}
 
-		public function checkMessageSpam($content, array $extraParams = array(), Zend_Controller_Request_Http $request = null)
+		public function checkMessageSpam($content, array $extraParams=array(), Zend_Controller_Request_Http $request=null)
 		{
 			$result=parent::checkMessageSpam($content, $extraParams, $request);
 
 			if (XenForo_Visitor::getInstance()->hasPermission('general', 'TPUSpamRegModAllPosts'))
 			{
-				if (($request!==null) && (strpos($request->getRequestUri(), '/conversations/')!==FALSE))	// Allow private messages
+				if (($request!==null) && (strpos($request->getRequestUri(), '/conversations/')!==false))	// Allow private messages
 				{
 					return $result;
 				}

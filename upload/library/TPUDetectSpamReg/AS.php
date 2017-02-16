@@ -22,22 +22,22 @@ class TPUDetectSpamReg_AS
 		return implode('.', array_reverse(str_split($hex)));
 	}
 
-	static function isIPv6($ip) 
+	static function isIPv6($ip)
 	{
 		return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 	}
-	
+
 	static function getASNameAndNumber_cymru($ip, &$asNumber, &$asName)
 	{
 		$dns = null;
-		try 
+		try
 		{
 			if (self::isIPv6($ip))
 				$dns=dns_get_record(self::reverseIPv6($ip).'.origin6.asn.cymru.com', DNS_TXT);
 			else
 				$dns=dns_get_record(self::reverseIP($ip).'.origin.asn.cymru.com', DNS_TXT);
 		} catch(Exception $e) {}
-			
+
 		if (!empty($dns[0]['txt']))
 		{
 			$items=explode('|', $dns[0]['txt'], 2);
@@ -51,12 +51,12 @@ class TPUDetectSpamReg_AS
 					$tokens=explode('|', $dns[0]['txt']);
 					$asName=trim($tokens[4]);
 
-					return TRUE;
+					return true;
 				}
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
 	static function getASNameAndNumber_ripe($ip, &$asNumber, &$asName)
@@ -68,57 +68,57 @@ class TPUDetectSpamReg_AS
 			$asInfo=json_decode(file_get_contents('https://stat.ripe.net/data/as-overview/data.json?resource=AS'.$asNumber));
 			$asName=$asInfo->data->holder;
 
-			return TRUE;
+			return true;
 		} catch (Exception $e) {};
 
-		return FALSE;
-    }
+		return false;
+	}
 
 	static function getASNameAndNumber_moocherio($ip, &$asNumber, &$asName)
 	{
-        $curl = curl_init();
+		$curl = curl_init();
 
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => "http://api.moocher.io/as/ip/".$ip,
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => "",
-          CURLOPT_MAXREDIRS => 1,
-          CURLOPT_TIMEOUT => 1,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => "GET",
-          CURLOPT_HTTPHEADER => array(
-            "content-type: application/json"
-          ),
-        ));
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => 'http://api.moocher.io/as/ip/'.$ip,
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_ENCODING => '',
+		  CURLOPT_MAXREDIRS => 1,
+		  CURLOPT_TIMEOUT => 1,
+		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		  CURLOPT_CUSTOMREQUEST => 'GET',
+		  CURLOPT_HTTPHEADER => array(
+			'content-type: application/json'
+		  ),
+		));
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-        
-        if ($http_code == 200) 
-        {
-            $json = @json_decode($response, true);
-            if (isset($json['as']['name']) || isset($json['as']['asn']))
-            {
-                $asName = @$json['as']['name'];
-                $asNumber = @$json['as']['asn'];
-                //$country = @$json['as']['country'];
-                return true;
-            }
-        }
-        return false;
-    }
-    
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+		$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+
+		if ($http_code == 200)
+		{
+			$json = @json_decode($response, true);
+			if (isset($json['as']['name']) || isset($json['as']['asn']))
+			{
+				$asName = @$json['as']['name'];
+				$asNumber = @$json['as']['asn'];
+				//$country = @$json['as']['country'];
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static function getRegSpamScore(&$score, array $user, $verbose, $debug, $model)
 	{
 		$o=XenForo_Application::getOptions();
 
 		if (trim($o->TPUDetectSpamRegAS)!='')
 		{
-			if (($o->tpu_asn_cymru && self::getASNameAndNumber_cymru($user['ip'], $asNumber, $asName)) || 
-                ($o->tpu_asn_moocherio && self::getASNameAndNumber_moocherio($user['ip'], $asNumber, $asName)) ||
-                ($o->tpu_asn_ripe && self::getASNameAndNumber_ripe($user['ip'], $asNumber, $asName)))
+			if (($o->tpu_asn_cymru && self::getASNameAndNumber_cymru($user['ip'], $asNumber, $asName)) ||
+				($o->tpu_asn_moocherio && self::getASNameAndNumber_moocherio($user['ip'], $asNumber, $asName)) ||
+				($o->tpu_asn_ripe && self::getASNameAndNumber_ripe($user['ip'], $asNumber, $asName)))
 			{
 				if ($verbose)
 					$model->logScore('tpu_detectspamreg_as_detected', 0, array('number'=>$asNumber, 'name'=>$asName));
@@ -153,8 +153,7 @@ class TPUDetectSpamReg_AS
 									$score['points']+=$points;
 							else
 									$score[$points]=true;
-						} else
-							if ($debug)
+						} elseif ($debug)
 								$model->logScore('tpu_detectspamreg_as_ok', 0, array('number'=>$asNumber, 'name'=>$match));
 					}
 				}

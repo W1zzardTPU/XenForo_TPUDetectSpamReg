@@ -9,7 +9,7 @@ class TPUDetectSpamReg_Listener
 			$extend[] = 'TPUDetectSpamReg_ModelSpamPrevention';
 		}
 	}
-	
+
 	public static function listenModelModQ($class, &$extend)
 	{
 		if ($class=='XenForo_Model_ModerationQueue')
@@ -17,7 +17,7 @@ class TPUDetectSpamReg_Listener
 			if (XenForo_Application::getOptions()->TPUDetectSpamRegShowInModQ)
 				$extend[] = 'TPUDetectSpamReg_ModelModerationQueue';
 		}
-	}	
+	}
 
 	public static function listenController($class, &$extend)
 	{
@@ -26,7 +26,7 @@ class TPUDetectSpamReg_Listener
 			$extend[] = 'TPUDetectSpamReg_ControllerPublicRegister';
 		}
 	}
-	
+
 	public static function listenViewAdmin($class, &$extend)
 	{
 		if ($class=='XenForo_ViewAdmin_User_Edit')
