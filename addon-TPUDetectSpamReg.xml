@@ -220,6 +220,7 @@ Modify the value of $score to adjust scoring.]]></event>
 +1|*dedi*
 -1|*.gov
 -1|*.mil
+-1|*.edu
 +1|*.rdns.ubiquity.io
 +1|*.rdns.ubiquityservers.com
 +1|*.hostwindsdns.com
