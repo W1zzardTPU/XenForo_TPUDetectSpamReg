@@ -4,6 +4,7 @@ class TPUDetectSpamReg_IPCountry
 {
 	static function getIPCountry($ip)
 	{
+		if (empty($ip)) return 'XX';
 		if (function_exists('geoip_db_avail') && geoip_db_avail(GEOIP_COUNTRY_EDITION))
 		{
 			try

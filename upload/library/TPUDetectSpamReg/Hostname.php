@@ -8,7 +8,7 @@ class TPUDetectSpamReg_Hostname
 
 		if (trim($o->TPUDetectSpamRegHostname)!='')
 		{
-			$hostname=gethostbyaddr($user['ip']);
+			$hostname = empty($user['ip']) ? '' : gethostbyaddr($user['ip']);
 
 			if ($verbose)
 				$model->logScore('tpu_detectspamreg_hostname_detected', 0, array('hostname'=>$hostname));
