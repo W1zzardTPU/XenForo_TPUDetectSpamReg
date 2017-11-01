@@ -64,7 +64,9 @@ class TPUDetectSpamReg_AS
 
 	static function getASNameAndNumber_ripe($ip, &$asNumber, &$asName)
 	{
-		if (empty($ip)) return false;
+		if (empty($ip))
+			return false;
+
 		// Old slow code
 		try {
 			$networkinfo=json_decode(file_get_contents('https://stat.ripe.net/data/network-info/data.json?resource='.$ip));
@@ -80,7 +82,9 @@ class TPUDetectSpamReg_AS
 
 	static function getASNameAndNumber_moocherio($ip, &$asNumber, &$asName)
 	{
-		if (empty($ip)) return false;
+		if (empty($ip))
+			return false;
+
 		$curl = curl_init();
 
 		curl_setopt_array($curl, array(
