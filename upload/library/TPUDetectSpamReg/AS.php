@@ -29,7 +29,9 @@ class TPUDetectSpamReg_AS
 
 	static function getASNameAndNumber_cymru($ip, &$asNumber, &$asName)
 	{
-		if (empty($ip)) return false;
+		if (empty($ip))
+			return false;
+
 		$dns = null;
 		try
 		{
@@ -82,16 +84,16 @@ class TPUDetectSpamReg_AS
 		$curl = curl_init();
 
 		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'http://api.moocher.io/as/ip/'.$ip,
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => '',
-		  CURLOPT_MAXREDIRS => 1,
-		  CURLOPT_TIMEOUT => 1,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => 'GET',
-		  CURLOPT_HTTPHEADER => array(
+			CURLOPT_URL => 'http://api.moocher.io/as/ip/'.$ip,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 1,
+			CURLOPT_TIMEOUT => 1,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'GET',
+			CURLOPT_HTTPHEADER => array(
 			'content-type: application/json'
-		  ),
+			),
 		));
 
 		$response = curl_exec($curl);
