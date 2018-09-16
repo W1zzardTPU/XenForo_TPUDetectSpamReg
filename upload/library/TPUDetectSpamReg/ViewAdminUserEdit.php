@@ -13,6 +13,7 @@ class TPUDetectSpamReg_ViewAdminUserEdit extends XFCP_TPUDetectSpamReg_ViewAdmin
 				LEFT JOIN xf_user AS user ON (log.user_id = user.user_id)
 				WHERE log.content_type = ?
 					AND log.user_id = ?
+                order by log.log_date desc 
 			', array('user', $this->_params['user']['user_id']));
 
 			if ($rows)
@@ -31,7 +32,7 @@ class TPUDetectSpamReg_ViewAdminUserEdit extends XFCP_TPUDetectSpamReg_ViewAdmin
                     $output[] =  join('<br />', $item);
                 }
 
-                $this->_params['tpudetectspamreg_log'] = join('<br />', $output);
+                $this->_params['tpudetectspamreg_log'] = join('<hr />', $output);
 			}
 		}
 
