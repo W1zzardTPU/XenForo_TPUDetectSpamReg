@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.6" version_id="1060600" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="TPUDetectSpamReg" title="TPU: Detect Spam Registrations" version_string="1.6.7" version_id="1060700" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -9,7 +9,7 @@
 	<ul>
 		<li><p>{xen:raw $preparedOption.explain}</p></li>
 	</ul>
-	
+
 	{xen:raw $editLink}
 
 </xen:controlunit>]]></template>
@@ -37,9 +37,9 @@
 				step="1"
 				min="0"
 				id="tpudsr_purgedays" />
-		<p class="explain">This will permanently remove the user, not just the permission. 0 to disable.</p></li>		
+		<p class="explain">This will permanently remove the user, not just the permission. 0 to disable.</p></li>
 	</ul>
-	
+
 	<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
 	{xen:raw $editLink}
 
@@ -476,6 +476,7 @@ Example: <I>+1|*free*</I>]]></phrase>
       <replace><![CDATA[$0
 
 <xen:if is="{$entry.content.tpudetectspamreg_log}">
+<xen:foreach loop="tpudetectspamreg_log"
 <dl class="ctrlUnit"><dt>User Registration Log:</dt>
 <dd style="font-family:monospace;font-size:11px">{xen:raw $entry.content.tpudetectspamreg_log}</dd></dl>
 </xen:if>]]></replace>
