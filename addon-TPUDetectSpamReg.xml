@@ -73,6 +73,7 @@ Modify the value of $score to adjust scoring.]]></event>
   <code_event_listeners>
     <listener event_id="load_class_controller" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenController" active="1" hint="XenForo_ControllerPublic_Register" description=""/>
     <listener event_id="load_class_model" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenModel" active="1" hint="XenForo_Model_SpamPrevention" description=""/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenModelUser" active="1" hint="XenForo_Model_User" description=""/>
     <listener event_id="load_class_model" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenModelModQ" active="1" hint="XenForo_Model_ModerationQueue" description="Add Moderation Queue Listing"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="TPUDetectSpamReg_Listener" callback_method="listenViewAdmin" active="1" hint="XenForo_ViewAdmin_User_Edit" description=""/>
     <listener event_id="tpu_detect_spam_reg" execute_order="10" callback_class="TPUDetectSpamReg_AS" callback_method="getRegSpamScore" active="1" hint="" description="Check AS"/>
