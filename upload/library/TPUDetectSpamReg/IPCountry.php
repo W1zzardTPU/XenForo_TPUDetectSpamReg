@@ -18,18 +18,40 @@ class TPUDetectSpamReg_IPCountry
 			} catch(ErrorException $e) {}
 		}
 
-		try
-		{
-			$country=json_decode(file_get_contents('http://ip-api.com/json/'.$ip));
-			if (isset($country) && isset($country->countryCode) && $country->countryCode!='')
-				return $country->countryCode;
+        $client = XenForo_Helper_Http::getUntrustedClient('https://api.apility.net/geoip/'.$ip);
+        try
+        {
+            $response = $client->request('GET');
+            $body = $response->getBody();
+            $country=json_decode($body);
+            if (isset($country) && isset($country->countryCode) && $country->countryCode!='')
+            {
+                return $country->countryCode;
+            }
 		} catch(Exception $e) {}
 
-		try
-		{
-			$country=json_decode(file_get_contents('https://freegeoip.net/json/'.$ip));
+        $client = XenForo_Helper_Http::getUntrustedClient('http://ip-api.com/json/'.$ip);
+        try
+        {
+            $response = $client->request('GET');
+            $body = $response->getBody();
+            $country=json_decode($body);
+			if (isset($country) && isset($country->countryCode) && $country->countryCode!='')
+            {
+				return $country->countryCode;
+            }
+		} catch(Exception $e) {}
+
+        $client = XenForo_Helper_Http::getUntrustedClient("https://api.ipstack.com/{$ip}?output=json&fields=country_code");
+        try
+        {
+            $response = $client->request('GET');
+            $body = $response->getBody();
+            $country=json_decode($body);
 			if (isset($country) && isset($country->country_code) && $country->country_code!='')
+            {
 				return $country->country_code;
+            }
 		} catch(Exception $e) {}
 
 		return 'XX';
